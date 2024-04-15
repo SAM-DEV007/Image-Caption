@@ -159,7 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 /Model/datasets
-Model/Model_Data/mobilenet_v3_large_weights.h5
+
 Model/Model_Data/test_cache/2078730147800495225/00000000.shard/00000000.snapshot
 Model/Model_Data/test_cache/2078730147800495225/00000001.shard/00000000.snapshot
 Model/Model_Data/test_cache/2078730147800495225/00000002.shard/00000000.snapshot
