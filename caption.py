@@ -1,6 +1,17 @@
 import tensorflow as tf
 
+import os
+import shutil
 from pathlib import Path
+
+import pickle
+
+
+def standardize(s):
+        s = tf.strings.lower(s)
+        s = tf.strings.regex_replace(s, f'[{re.escape(string.punctuation)}]', '')
+        s = tf.strings.join(['[START]', s, '[END]'], separator=' ')
+        return s
 
 
 # Building the model
@@ -170,3 +181,27 @@ class Captioner(tf.keras.Model):
 if __name__ == '__main__':
     model_data_path = Path.cwd() / 'Model/Model_Data'
     weights_path = model_data_path / 'weights'
+
+    IMAGE_SHAPE=(224, 224, 3)
+    mobilenet = tf.keras.applications.MobileNetV3Large(
+        input_shape=IMAGE_SHAPE,
+        include_top=False,
+        include_preprocessing=True)
+    mobilenet.trainable=False
+
+    # Easier file handling
+    if not os.path.exists(Path.cwd() / 'Model_Data'):
+        os.mkdir(Path.cwd() / 'Model_Data')
+    shutil.move(Path.home() / '.keras/models/weights_mobilenet_v3_large_224_1.0_float_no_top_v2.h5', Path.cwd() / 'Model_Data/mobilenet_v3_large_weights.h5')
+
+
+    from_disk = pickle.load(open(str(pathlib.Path.cwd() / 'Model_Data/tokenizer.pkl'), "rb"))
+    tokenizer = tf.keras.layers.TextVectorization(
+        max_tokens=from_disk['config']['max_tokens'],
+        standardize=standardize,
+        ragged=True)
+    tokenizer.set_weights(from_disk['weights'])
+
+    # Model
+    model = Captioner(tokenizer, feature_extractor=mobilenet, output_layer=output_layer,
+                  units=256, dropout_rate=0.5, num_layers=2, num_heads=2)
