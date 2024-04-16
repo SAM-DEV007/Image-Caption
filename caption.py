@@ -207,7 +207,7 @@ class TokenOutput(tf.keras.layers.Layer):
 if __name__ == '__main__':
     model_data_path = Path.cwd() / 'Model/Model_Data'
     weights_path = model_data_path / 'weights/model.tf'
-
+    
     IMAGE_SHAPE=(224, 224, 3)
     mobilenet = tf.keras.applications.MobileNetV3Large(
         input_shape=IMAGE_SHAPE,
