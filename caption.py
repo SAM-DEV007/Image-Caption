@@ -24,6 +24,16 @@ def load_image(image_path):
     return img
 
 
+def create_model(tokenizer, mobilenet, output_layer, weights_path):
+    model = Captioner(tokenizer, feature_extractor=mobilenet, output_layer=output_layer,
+                  units=256, dropout_rate=0.5, num_layers=2, num_heads=2)
+    
+    model.build(input_shape=[(None, 224, 224, 3), (None, None)])
+    model.load_weights(str(weights_path))
+
+    return model
+
+
 # Building the model
 class SeqEmbedding(tf.keras.layers.Layer):
     def __init__(self, vocab_size, max_length, depth):
@@ -230,13 +240,7 @@ if __name__ == '__main__':
     tokenizer.set_weights(from_disk['weights'])
 
     output_layer = TokenOutput(tokenizer, banned_tokens=('', '[UNK]', '[START]'))
-    
-    # Model
-    model = Captioner(tokenizer, feature_extractor=mobilenet, output_layer=output_layer,
-                  units=256, dropout_rate=0.5, num_layers=2, num_heads=2)
-    
-    model.build(input_shape=[(None, 224, 224, 3), (None, None)])
-    model.load_weights(str(weights_path))
+    model = create_model(tokenizer, mobilenet, output_layer, weights_path)
 
     result = model.simple_gen(load_image(str(Path.cwd() / 'Images/surf.jpg')))
     print(result)
