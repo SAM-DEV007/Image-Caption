@@ -15,6 +15,15 @@ def standardize(s):
         return s
 
 
+def load_image(image_path):
+    global IMAGE_SHAPE
+
+    img = tf.io.read_file(image_path)
+    img = tf.io.decode_jpeg(img, channels=3)
+    img = tf.image.resize(img, IMAGE_SHAPE[:-1])
+    return img
+
+
 # Building the model
 class SeqEmbedding(tf.keras.layers.Layer):
     def __init__(self, vocab_size, max_length, depth):
@@ -187,7 +196,7 @@ class TokenOutput(tf.keras.layers.Layer):
             units=tokenizer.vocabulary_size(), **kwargs)
         self.tokenizer = tokenizer
         self.banned_tokens = banned_tokens
-        self.bias = None
+        self.bias = pickle.load(open(str(Path.cwd() / 'Model/Model_Data/bias.pkl'), "rb"))
     
 
     def call(self, x):
@@ -197,7 +206,7 @@ class TokenOutput(tf.keras.layers.Layer):
 
 if __name__ == '__main__':
     model_data_path = Path.cwd() / 'Model/Model_Data'
-    weights_path = model_data_path / 'weights'
+    weights_path = model_data_path / 'weights/model.tf'
 
     IMAGE_SHAPE=(224, 224, 3)
     mobilenet = tf.keras.applications.MobileNetV3Large(
@@ -207,9 +216,11 @@ if __name__ == '__main__':
     mobilenet.trainable=False
 
     # Easier file handling
+    '''
     if not os.path.exists(model_data_path):
         os.mkdir(model_data_path)
     shutil.move(Path.home() / '.keras/models/weights_mobilenet_v3_large_224_1.0_float_no_top_v2.h5', model_data_path / 'mobilenet_v3_large_weights.h5')
+    '''
 
     from_disk = pickle.load(open(str(model_data_path / 'tokenizer.pkl'), "rb"))
     tokenizer = tf.keras.layers.TextVectorization(
@@ -226,3 +237,6 @@ if __name__ == '__main__':
     
     model.build(input_shape=[(None, 224, 224, 3), (None, None)])
     model.load_weights(str(weights_path))
+
+    result = model.simple_gen(load_image(str(Path.cwd() / 'Images/surf.jpg')))
+    print(result)
