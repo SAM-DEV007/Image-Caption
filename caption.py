@@ -16,6 +16,7 @@ class SeqEmbedding(tf.keras.layers.Layer):
         
         self.add = tf.keras.layers.Add()
     
+    
     def call(self, seq):
         seq = self.token_embedding(seq) # (batch, seq, depth)
         
@@ -65,6 +66,7 @@ class FeedForward(tf.keras.layers.Layer):
         self.add = tf.keras.layers.Add()
         self.layernorm = tf.keras.layers.LayerNormalization()
     
+
     def call(self, x):
         x = self.add([x, self.seq(x)])
         return self.layernorm(x)
@@ -95,4 +97,5 @@ class DecoderLayer(tf.keras.layers.Layer):
 
 
 if __name__ == '__main__':
-    ...
+    model_data_path = Path.cwd() / 'Model/Model_Data'
+    weights_path = model_data_path / 'weights'
