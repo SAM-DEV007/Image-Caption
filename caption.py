@@ -178,6 +178,22 @@ class Captioner(tf.keras.Model):
         return txt
 
 
+class TokenOutput(tf.keras.layers.Layer):
+    def __init__(self, tokenizer, banned_tokens=('', '[UNK]', '[START]'), **kwargs):
+        super().__init__()
+        
+        self.dense = tf.keras.layers.Dense(
+            units=tokenizer.vocabulary_size(), **kwargs)
+        self.tokenizer = tokenizer
+        self.banned_tokens = banned_tokens
+        self.bias = None
+    
+
+    def call(self, x):
+        x = self.dense(x)
+        return x + self.bias
+
+
 if __name__ == '__main__':
     model_data_path = Path.cwd() / 'Model/Model_Data'
     weights_path = model_data_path / 'weights'
@@ -190,18 +206,22 @@ if __name__ == '__main__':
     mobilenet.trainable=False
 
     # Easier file handling
-    if not os.path.exists(Path.cwd() / 'Model_Data'):
-        os.mkdir(Path.cwd() / 'Model_Data')
-    shutil.move(Path.home() / '.keras/models/weights_mobilenet_v3_large_224_1.0_float_no_top_v2.h5', Path.cwd() / 'Model_Data/mobilenet_v3_large_weights.h5')
+    if not os.path.exists(model_data_path):
+        os.mkdir(model_data_path)
+    shutil.move(Path.home() / '.keras/models/weights_mobilenet_v3_large_224_1.0_float_no_top_v2.h5', model_data_path / 'mobilenet_v3_large_weights.h5')
 
 
-    from_disk = pickle.load(open(str(pathlib.Path.cwd() / 'Model_Data/tokenizer.pkl'), "rb"))
+    from_disk = pickle.load(open(str(model_data_path / 'tokenizer.pkl'), "rb"))
     tokenizer = tf.keras.layers.TextVectorization(
         max_tokens=from_disk['config']['max_tokens'],
         standardize=standardize,
         ragged=True)
     tokenizer.set_weights(from_disk['weights'])
 
+    output_layer = TokenOutput(tokenizer, banned_tokens=('', '[UNK]', '[START]'))
+    
     # Model
     model = Captioner(tokenizer, feature_extractor=mobilenet, output_layer=output_layer,
                   units=256, dropout_rate=0.5, num_layers=2, num_heads=2)
+    
+    model.load_weights(str(weights_path / 'model.tf'), save_format='tf')
