@@ -1,4 +1,5 @@
 import tensorflow as tf
+import einops
 
 import os
 import shutil
@@ -210,7 +211,6 @@ if __name__ == '__main__':
         os.mkdir(model_data_path)
     shutil.move(Path.home() / '.keras/models/weights_mobilenet_v3_large_224_1.0_float_no_top_v2.h5', model_data_path / 'mobilenet_v3_large_weights.h5')
 
-
     from_disk = pickle.load(open(str(model_data_path / 'tokenizer.pkl'), "rb"))
     tokenizer = tf.keras.layers.TextVectorization(
         max_tokens=from_disk['config']['max_tokens'],
@@ -224,4 +224,5 @@ if __name__ == '__main__':
     model = Captioner(tokenizer, feature_extractor=mobilenet, output_layer=output_layer,
                   units=256, dropout_rate=0.5, num_layers=2, num_heads=2)
     
-    model.load_weights(str(weights_path / 'model.tf'), save_format='tf')
+    model.build(input_shape=[(None, 224, 224, 3), (None, None)])
+    model.load_weights(str(weights_path))
