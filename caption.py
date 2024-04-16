@@ -16,7 +16,7 @@ class SeqEmbedding(tf.keras.layers.Layer):
         
         self.add = tf.keras.layers.Add()
     
-    
+
     def call(self, seq):
         seq = self.token_embedding(seq) # (batch, seq, depth)
         
@@ -94,6 +94,77 @@ class DecoderLayer(tf.keras.layers.Layer):
         self.last_attention_scores = self.cross_attention.last_attention_scores
         out_seq = self.ff(out_seq)
         return out_seq
+
+
+class Captioner(tf.keras.Model):
+    def __init__(self, tokenizer, feature_extractor, output_layer, num_layers=1,
+               units=256, max_length=50, num_heads=1, dropout_rate=0.1):
+        super().__init__()
+        self.feature_extractor = feature_extractor
+        self.tokenizer = tokenizer
+        self.word_to_index = tf.keras.layers.StringLookup(
+            mask_token="",
+            vocabulary=tokenizer.get_vocabulary())
+        self.index_to_word = tf.keras.layers.StringLookup(
+            mask_token="",
+            vocabulary=tokenizer.get_vocabulary(),
+            invert=True) 
+        
+        self.seq_embedding = SeqEmbedding(
+            vocab_size=tokenizer.vocabulary_size(),
+            depth=units,
+            max_length=max_length)
+        
+        self.decoder_layers = [
+            DecoderLayer(units, num_heads=num_heads, dropout_rate=dropout_rate)
+            for n in range(num_layers)]
+        
+        self.output_layer = output_layer
+    
+
+    def simple_gen(self, image):
+        initial = self.word_to_index([['[START]']]) # (batch, sequence)
+        img_features = self.feature_extractor(image[tf.newaxis, ...])
+        
+        tokens = initial # (batch, sequence)
+        for n in range(50): # 50 words
+            preds = self((img_features, tokens)).numpy()  # (batch, sequence, vocab)
+            preds = preds[:,-1, :]  #(batch, vocab)
+
+            next = tf.argmax(preds, axis=-1)[:, tf.newaxis]
+            tokens = tf.concat([tokens, next], axis=1) # (batch, sequence) 
+            
+            if next[0] == self.word_to_index('[END]'):
+                break
+        words = self.index_to_word(tokens[0, 1:-1])
+        result = tf.strings.reduce_join(words, axis=-1, separator=' ')
+        return result.numpy().decode()
+    
+
+    def call(self, inputs):
+        image, txt = inputs
+
+        if image.shape[-1] == 3:
+        # Apply the feature-extractor, if you get an RGB image.
+            image = self.feature_extractor(image)
+        
+        # Flatten the feature map
+        image = einops.rearrange(image, 'b h w c -> b (h w) c')
+        
+        
+        if txt.dtype == tf.string:
+        # Apply the tokenizer if you get string inputs.
+            txt = tokenizer(txt)
+        
+        txt = self.seq_embedding(txt)
+        
+        # Look at the image
+        for dec_layer in self.decoder_layers:
+            txt = dec_layer(inputs=(image, txt))
+        
+        txt = self.output_layer(txt)
+        
+        return txt
 
 
 if __name__ == '__main__':
