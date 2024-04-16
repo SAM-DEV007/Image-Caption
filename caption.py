@@ -1,11 +1,14 @@
 import tensorflow as tf
 import einops
 
+from PIL import Image, ImageDraw, ImageFont
+
 import os
 import shutil
 from pathlib import Path
 
 import pickle
+import textwrap
 
 
 def standardize(s):
@@ -32,6 +35,27 @@ def create_model(tokenizer, mobilenet, output_layer, weights_path):
     model.load_weights(str(weights_path))
 
     return model
+
+
+def add_caption(caption):
+    caption = caption[0].upper() + caption[1:] + '.'
+
+    img = Image.open(str(Path.cwd() / 'Images/surf.jpg'))
+    width, height = img.size
+
+    font = ImageFont.truetype('arial.ttf', 15)
+    _, _, w, h = font.getbbox(caption)
+    
+    wrapper = textwrap.TextWrapper(width=int(width*0.15))
+    word_list = wrapper.wrap(text=caption)
+
+    new_img = Image.new('RGB', (width+10, height+((height//10))), 'black')
+    new_img.paste(img, (5, 5, width+5, height+5))
+
+    draw = ImageDraw.Draw(new_img)
+    draw.text(((width-w)//2, height+((height//10)-h)//2), '\n'.join(word_list), font=font, fill='white')
+
+    return new_img
 
 
 # Building the model
@@ -242,5 +266,9 @@ if __name__ == '__main__':
     output_layer = TokenOutput(tokenizer, banned_tokens=('', '[UNK]', '[START]'))
     model = create_model(tokenizer, mobilenet, output_layer, weights_path)
 
+    # Image Captioning
     result = model.simple_gen(load_image(str(Path.cwd() / 'Images/surf.jpg')))
-    print(result)
+    
+    img = add_caption(result)
+    img.save(str(Path.cwd() / 'Images/surf_captioned.jpg'))
+    
