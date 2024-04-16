@@ -37,13 +37,13 @@ def create_model(tokenizer, mobilenet, output_layer, weights_path):
     return model
 
 
-def add_caption(caption):
+def add_caption(caption, image_path):
     caption = caption[0].upper() + caption[1:] + '.'
 
-    img = Image.open(str(Path.cwd() / 'Images/surf.jpg'))
+    img = Image.open(image_path).resize((640, 480))
     width, height = img.size
 
-    font = ImageFont.truetype('arial.ttf', 15)
+    font = ImageFont.truetype('arial.ttf', 16)
     _, _, w, h = font.getbbox(caption)
     
     wrapper = textwrap.TextWrapper(width=int(width*0.15))
@@ -239,7 +239,7 @@ class TokenOutput(tf.keras.layers.Layer):
 
 
 if __name__ == '__main__':
-    model_data_path = Path.cwd() / 'Model/Model_Data'
+    model_data_path = Path(__file__).parent / 'Model/Model_Data'
     weights_path = model_data_path / 'weights/model.tf'
     
     IMAGE_SHAPE=(224, 224, 3)
@@ -266,9 +266,21 @@ if __name__ == '__main__':
     output_layer = TokenOutput(tokenizer, banned_tokens=('', '[UNK]', '[START]'))
     model = create_model(tokenizer, mobilenet, output_layer, weights_path)
 
+    # Clears Captioned folder
+    shutil.rmtree(str(Path(__file__).parent / 'Images/Captioned'))
+
     # Image Captioning
-    result = model.simple_gen(load_image(str(Path.cwd() / 'Images/surf.jpg')))
-    
-    img = add_caption(result)
-    img.save(str(Path.cwd() / 'Images/surf_captioned.jpg'))
-    
+    for i in os.listdir(str(Path(__file__).parent / 'Images')):
+        if os.path.isfile(str(Path(__file__).parent / 'Images/') + f'/{i}'):
+            if not os.path.exists(str(Path(__file__).parent / 'Images/Captioned')):
+                os.mkdir(str(Path(__file__).parent / 'Images/Captioned'))
+
+            image_name, image_type = i.split('.')
+            result = model.simple_gen(load_image(str(Path(__file__).parent / 'Images/') + f'/{i}'))
+            try:
+                result = model.simple_gen(load_image(str(Path(__file__).parent / 'Images/') + f'/{i}'))
+            except Exception as e:
+                print(e)
+                continue
+            img = add_caption(result, str(Path(__file__).parent / 'Images/') + f'/{i}')
+            img.save(str(Path(__file__).parent / 'Images/Captioned/') + f'/{image_name}_captioned.{image_type}')
