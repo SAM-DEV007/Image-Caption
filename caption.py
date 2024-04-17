@@ -29,7 +29,7 @@ def load_image(image_path):
 
 def create_model(tokenizer, mobilenet, output_layer, weights_path):
     model = Captioner(tokenizer, feature_extractor=mobilenet, output_layer=output_layer,
-                  units=256, dropout_rate=0.5, num_layers=2, num_heads=2)
+                  units=512, dropout_rate=0.4, num_layers=5, num_heads=3)
     
     model.build(input_shape=[(None, 224, 224, 3), (None, None)])
     model.load_weights(str(weights_path))
@@ -152,8 +152,8 @@ class DecoderLayer(tf.keras.layers.Layer):
 
 
 class Captioner(tf.keras.Model):
-    def __init__(self, tokenizer, feature_extractor, output_layer, num_layers=1,
-               units=256, max_length=50, num_heads=1, dropout_rate=0.1):
+    def __init__(self, tokenizer, feature_extractor, output_layer, num_layers=5,
+               units=512, max_length=50, num_heads=3, dropout_rate=0.2):
         super().__init__()
         self.feature_extractor = feature_extractor
         self.tokenizer = tokenizer
