@@ -162,5 +162,4 @@ cython_debug/
 
 Model/Model_Data/test_cache
 Model/Model_Data/train_cache
-Model/Model_Data/weights/model.tf.index
-Model/Model_Data/weights/model.tf.data-00000-of-00001
+Model/Model_Data/weights
