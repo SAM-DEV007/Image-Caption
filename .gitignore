@@ -162,4 +162,3 @@ cython_debug/
 
 Model/Model_Data/test_cache
 Model/Model_Data/train_cache
-Model/Model_Data/weights
