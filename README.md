@@ -6,6 +6,10 @@ Implementation of the tutorial project provided by [Tensorflow](https://www.tens
 # Requirements
 - `pip install -r requirements.txt`.
 - Python 3.x or greator. (Python 3.9 used for development here)
+- To use the updated model:
+    - Download the model from [here](https://drive.google.com/file/d/1cYcKaNmyPMS0Zq-x4ZmVGq6JhIH4fLQe/view?usp=sharing).
+    - Copy and extract it to `Model/Model_Data/`, replace the folder if necessary.
+    - Make sure the name of the folder is `weights`.
 
 # Model
 It uses `Mobile-Net V3 Large` feature extractor to extract the features from the image and Transformer-Decoder to generate the caption.
