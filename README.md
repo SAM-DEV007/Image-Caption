@@ -75,7 +75,9 @@ The following steps can be followed to integrate the model in a web application:
 3. Load the image received from the client in RGB format.
 4. In `caption.py`, make sure `if __name__ == '__main__':` is changed to a function name so that it can be called repeatedly.\
    In the same code block, till the line `model = create_model(tokenizer, mobilenet, output_layer, weights_path)` is revelant. After this line, from the comment `Clears Captioned folder`, the code has no value for web developement.
-5. `output = model.simple_gen(load_image(<image_object>))` can be used to generate the caption of the image. `output` contains the caption.
-6. `img = add_caption(output, <image_object>)` can be used to combine the caption generated and the image in a single combined image. `output` is the caption generated from the model. `img` contains the combined image.
+
+Information on the main functions:
+- `output = model.simple_gen(load_image(<image_object>))` is used to generate the caption of the image. `output` contains the caption.
+- `img = add_caption(output, <image_object>)` can be used to combine the caption generated and the image in a single combined image. `output` is the caption generated from the model. `img` contains the combined image.
 
 *NOTE: The function `load_image` and `add_caption` has to be modified in order to work with the image object. Currently, these functions take image path as the argument and opens the image instead of directly applying the operations.*
