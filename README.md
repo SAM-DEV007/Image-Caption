@@ -1,7 +1,11 @@
 # Image-Caption
 Generates a caption for the image.
 
-Implementation of the tutorial project provided by [Tensorflow](https://www.tensorflow.org/text/tutorials/image_captioning).
+Implementation of the tutorial project provided by [Tensorflow](https://www.tensorflow.org/text/tutorials/image_captioning). 
+
+The aim of the project is to get an idea of how the captioning of an image occurs. It can, then, be modified to detect certain features from the image and generate customizable captions. These captions can also be integrated in social media apps like Instagram to generate captions for the post according to the image. It can also take account of the user behaviour and can customize the generated text.
+
+It can create opportunities for customizable generation of captions from images without losing the creative touch. It can elaborate the features detected from the image. The hidden features detected can also act as a security measure by specifying the feature that is being detected as a calamity. For example, a person with a gun partially visible from the jacket. The feature extractor can detect the harmful object, here it is gun, and notify the officials describing the situation of weapon detection, its location and the description of the person and place.
 
 # Requirements
 - `pip install -r requirements.txt`.
@@ -10,6 +14,35 @@ Implementation of the tutorial project provided by [Tensorflow](https://www.tens
     - Download the model from [here](https://drive.google.com/file/d/1cYcKaNmyPMS0Zq-x4ZmVGq6JhIH4fLQe/view?usp=sharing).
     - Copy and extract it to `Model/Model_Data/`, replace the folder if necessary.
     - Make sure the name of the folder is `weights`.
+
+# Installation
+## Clone the repository
+```bash
+git clone https://github.com/SAM-DEV007/Image-Caption.git
+cd Image-Caption
+```
+
+## Create a virtual environment
+```bash
+pip install virtualenv
+python -m venv .venv
+```
+
+## Activate vitrual environment
+### Windows
+```bash
+./venv/Scripts/activate
+```
+### Linux/Mac
+```bash
+source venv/bin/activate
+```
+
+## Install Dependencies
+(Refer to the [Requirements](#requirements) section for the updated model)
+```bash
+pip install -r requirements.txt
+```
 
 # Model
 It uses `Mobile-Net V3 Large` feature extractor to extract the features from the image and Transformer-Decoder to generate the caption.
